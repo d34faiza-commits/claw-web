@@ -27,6 +27,10 @@ npm run build     # typecheck + build ke dist/
 | `public/agents/` | Avatar 3D kepala 256×256 (orbit hero, CTA), salinan dari `clau-agent/frontend/public/agents/` |
 | `public/agents/full/` | Figur 3D full-body tanpa latar (carousel agent), dipotong dari master `clau-agent/agents/avatars/` dengan `rembg` (isnet-general-use), tinggi 900 px |
 
+## Untuk AI agent
+
+Baca [AGENTS.md](./AGENTS.md): selalu backup ke repo, branch AI → PR → CI hijau → merge otomatis (`.github/workflows/auto-merge.yml`).
+
 ## Aturan isi
 
 - Isi paket dari `clau-market/commercial/service-catalog.md`. **Harga tidak ditampilkan** (dikirim lewat proposal).
