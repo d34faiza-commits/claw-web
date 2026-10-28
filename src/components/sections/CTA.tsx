@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { OrbitingCircles } from "@/components/ui/orbiting-circles";
 import { Reveal } from "@/components/ui/reveal";
 import { agents, avatar } from "@/data/agents";
 import { CONTACT_URL } from "@/data/site";
@@ -12,6 +13,19 @@ export function CTA() {
       <Reveal className="relative mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] border border-teal-300/20 bg-gradient-to-br from-teal-600/25 via-ink-2 to-ink px-6 py-16 text-center sm:px-12 sm:py-20">
         <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
         <div className="absolute -top-32 left-1/2 size-[420px] -translate-x-1/2 rounded-full bg-teal-400/25 blur-[110px] animate-glow" />
+        {/* Cincin orbit agent di belakang headline (21st.dev OrbitingCircles) */}
+        <div className="pointer-events-none absolute top-1/2 left-1/2 flex size-[760px] -translate-x-1/2 -translate-y-1/2 items-center justify-center opacity-40" aria-hidden>
+          <OrbitingCircles radius={260} iconSize={40} speed={0.4}>
+            {agents.slice(0, 6).map((a) => (
+              <img key={a.id} src={avatar(a.id)} alt="" className="size-10 rounded-full bg-mint object-cover" />
+            ))}
+          </OrbitingCircles>
+          <OrbitingCircles radius={360} iconSize={40} speed={0.25} reverse>
+            {agents.slice(6).map((a) => (
+              <img key={a.id} src={avatar(a.id)} alt="" className="size-10 rounded-full bg-mint object-cover" />
+            ))}
+          </OrbitingCircles>
+        </div>
 
         <div className="relative flex justify-center -space-x-3">
           {crew.map((a, i) => (
