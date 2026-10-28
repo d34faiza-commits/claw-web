@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+/* Palet: brand-guideline CLAU (Deep Teal #0F766E, Navy #0F172A) dalam mode gelap premium. */
+@theme {
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+
+  --color-ink: #05080d;
+  --color-ink-2: #0a0f17;
+  --color-teal-glow: #2dd4bf;
+  --color-mint: #ddf4ee;
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-rotate: rotate 4s linear infinite;
+  --animate-glow: glow 6s ease-in-out infinite;
+
+  @keyframes orbit {
+    0% {
+      transform: rotate(calc(var(--angle) * 1deg)) translateY(calc(var(--radius) * 1px))
+        rotate(calc(var(--angle) * -1deg));
+    }
+    100% {
+      transform: rotate(calc(var(--angle) * 1deg + 360deg)) translateY(calc(var(--radius) * 1px))
+        rotate(calc((var(--angle) * -1deg) - 360deg));
+    }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes rotate {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes glow {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 0.9; }
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+body {
+  background: var(--color-ink);
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+::selection {
+  background: rgb(45 212 191 / 0.3);
+}
+
+/* Durasi per elemen (--duration diset inline), jadi tidak bisa lewat variabel @theme di :root. */
+@utility animate-orbit {
+  animation: orbit calc(var(--duration) * 1s) linear infinite;
+}
+
+@utility glass {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.02));
+  border: 1px solid rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+@utility text-gradient {
+  background: linear-gradient(120deg, #f8fafc 10%, #99f6e4 55%, #2dd4bf 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-grid {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
