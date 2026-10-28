@@ -21,9 +21,10 @@ npm run build     # typecheck + build ke dist/
 | `src/components/ui/orbiting-circles.tsx` | Dari 21st.dev `ruixen.ui/hero-section06`, diadaptasi tanpa Next.js |
 | `src/components/ui/bento-grid.tsx` | Dari 21st.dev `kokonutd/bento-grid`, ditambah slot visual + hover Motion |
 | `src/components/ui/reveal.tsx` · `button.tsx` | Scroll reveal (fade-in + slide-up) dan tombol dengan hover Motion |
-| `src/data/agents.ts` | 12 agent, mengikuti `clau-agent/agents/registry.json` |
+| `src/data/agents.ts` | 12 agent, mengikuti `clau-agent/agents/registry.json`, + suasana ruangan (`scene`) per kartu |
 | `src/data/site.ts` | Navigasi + `CONTACT_URL` |
-| `public/agents/` | Avatar 3D 256×256, salinan dari `clau-agent/frontend/public/agents/` |
+| `public/agents/` | Avatar 3D kepala 256×256 (orbit hero, CTA), salinan dari `clau-agent/frontend/public/agents/` |
+| `public/agents/full/` | Figur 3D full-body tanpa latar (carousel agent), dipotong dari master `clau-agent/agents/avatars/` dengan `rembg` (isnet-general-use), tinggi 900 px |
 
 ## Aturan isi
 
