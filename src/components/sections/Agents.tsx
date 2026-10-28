@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useRef } from "react";
 import { Reveal, SectionHeading } from "@/components/ui/reveal";
-import { agents, figure, type Agent } from "@/data/agents";
+import { agents, figure, sceneImage, type Agent } from "@/data/agents";
 import { cn } from "@/lib/utils";
 
 // Ruangan 3D dari CSS: dinding bergradasi, jendela bercahaya, lantai berperspektif, bokeh, dan bayangan kaki.
@@ -53,18 +53,33 @@ function AgentCard({ a, i }: { a: Agent; i: number }) {
       className="group w-[78vw] max-w-[360px] shrink-0 snap-start sm:w-[340px]"
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-[28px] ring-1 ring-white/10 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)] transition-shadow duration-500 group-hover:shadow-[0_40px_90px_-30px_rgba(45,212,191,0.45)]">
-        <motion.div className="absolute inset-0" variants={{ hover: { scale: 1.06 } }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
-          <Scene scene={a.scene} />
-        </motion.div>
-        <motion.img
-          src={figure(a.id)}
-          alt={`${a.name}, karakter AI ${a.role}`}
-          loading="lazy"
-          draggable={false}
-          variants={{ hover: { y: -14, scale: 1.04 } }}
-          transition={{ type: "spring", stiffness: 200, damping: 18 }}
-          className="absolute bottom-[8%] left-1/2 h-[80%] w-auto max-w-[92%] -translate-x-1/2 object-contain object-bottom drop-shadow-[0_18px_24px_rgba(0,0,0,0.35)]"
-        />
+        {a.sceneImage ? (
+          // Render 3D dengan ruangan asli (docs/avatar-scene-prompts.md) menggantikan latar CSS.
+          <motion.img
+            src={sceneImage(a.id)}
+            alt={`${a.name}, ${a.role}, di ${a.scene.setting.toLowerCase()}`}
+            loading="lazy"
+            draggable={false}
+            variants={{ hover: { scale: 1.06 } }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-0 size-full object-cover"
+          />
+        ) : (
+          <>
+            <motion.div className="absolute inset-0" variants={{ hover: { scale: 1.06 } }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
+              <Scene scene={a.scene} />
+            </motion.div>
+            <motion.img
+              src={figure(a.id)}
+              alt={`${a.name}, ${a.role}`}
+              loading="lazy"
+              draggable={false}
+              variants={{ hover: { y: -14, scale: 1.04 } }}
+              transition={{ type: "spring", stiffness: 200, damping: 18 }}
+              className="absolute bottom-[8%] left-1/2 h-[80%] w-auto max-w-[92%] -translate-x-1/2 object-contain object-bottom drop-shadow-[0_18px_24px_rgba(0,0,0,0.35)]"
+            />
+          </>
+        )}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
           <span className="rounded-full bg-black/35 px-3 py-1 text-[11px] font-medium text-white/90 backdrop-blur-md">{a.scene.setting}</span>
           <span

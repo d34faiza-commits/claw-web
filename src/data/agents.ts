@@ -8,6 +8,8 @@ export type Agent = {
   active: boolean;
   /** Suasana ruangan di kartu carousel: warna dinding (atas → bawah), lantai, dan cahaya. */
   scene: { wall: [string, string]; floor: string; light: string; setting: string };
+  /** true bila public/agents/scene/<id>.webp sudah ada (lihat docs/avatar-scene-prompts.md). */
+  sceneImage?: boolean;
 };
 
 export const agents: Agent[] = [
@@ -28,3 +30,4 @@ export const agents: Agent[] = [
 export const avatar = (id: string) => `/agents/${id}.webp`;
 // Figur full-body tanpa latar (dipotong dari master clau-agent/agents/avatars).
 export const figure = (id: string) => `/agents/full/${id}.webp`;
+export const sceneImage = (id: string) => `/agents/scene/${id}.webp`;
