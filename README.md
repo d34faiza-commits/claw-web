@@ -24,6 +24,7 @@ npm run build     # typecheck + build ke dist/
 | `src/components/ui/wide-scenes.tsx` · `hospitality-scenes.tsx` | Adegan SVG berlapis (parallax) untuk hero & meja · 12 ruangan hospitality per peran untuk kartu |
 | `src/components/ui/reveal.tsx` · `button.tsx` | Scroll reveal (fade-in + slide-up) dan tombol dengan hover Motion |
 | `public/agents/scene/` | (Opsional) render 3D dengan ruangan asli per agent; prompt & cara pasang: `docs/avatar-scene-prompts.md` |
+| `public/scenes/` · `scripts/scenes/` | Latar ilustrasi 4K berlapis (WebP 1920 & 3840) untuk hero & meja; dibuat ulang dengan `python3 scripts/scenes/build.py` (butuh Pillow + Playwright/Chromium) |
 | `src/data/agents.ts` | 12 agent, mengikuti `clau-agent/agents/registry.json`, + suasana ruangan (`scene`) per kartu |
 | `src/data/site.ts` | Navigasi + `CONTACT_URL` |
 | `public/agents/` | Avatar 3D kepala 256×256 (orbit hero, CTA), salinan dari `clau-agent/frontend/public/agents/` |

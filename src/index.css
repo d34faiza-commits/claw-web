@@ -102,11 +102,7 @@ body {
   transform-origin: top;
 }
 
-/* Elemen hidup di adegan SVG (hero & meja). transform-box view-box: origin pakai koordinat viewBox. */
-@keyframes sway {
-  0%, 100% { transform: rotate(-1.6deg); }
-  50% { transform: rotate(1.6deg); }
-}
+/* Elemen hidup di overlay adegan (hero & meja). */
 @keyframes ray {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
@@ -130,10 +126,6 @@ body {
   0% { transform: translateY(10px); opacity: 0; }
   30% { opacity: 0.5; }
   100% { transform: translateY(-50px); opacity: 0; }
-}
-@utility animate-sway {
-  animation: sway 6s ease-in-out infinite;
-  transform-box: view-box;
 }
 @utility animate-ray {
   animation: ray 7s ease-in-out infinite;
