@@ -9,3 +9,5 @@ dist
 # screenshot QA lokal
 /*.png
 *.tsbuildinfo
+__pycache__/
+*.pyc

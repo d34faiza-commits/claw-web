@@ -1,4 +1,4 @@
-// Ilustrasi ruangan hospitality per agent (SVG 300×400), dirender sedikit blur seperti latar foto 3D.
+// Ilustrasi ruangan hospitality per agent (SVG 300×400), tajam (tanpa blur) dengan pencahayaan sederhana.
 // Tanpa teks, logo, atau simbol sakral (aturan avatar CLAU).
 import type { ReactNode } from "react";
 
@@ -22,6 +22,10 @@ function Room({ id, wall, floor, children }: { id: string; wall: [string, string
       <rect width={W} height={FLOOR} fill={`url(#${id}-wall)`} />
       <rect y={FLOOR} width={W} height={H - FLOOR} fill={`url(#${id}-floor)`} />
       {children}
+      {/* Pencahayaan: cahaya lembut dari atas, bayangan sudut dinding-lantai, kilap lantai */}
+      <rect width={W} height={H} fill="url(#room-top-light)" />
+      <rect y={FLOOR} width={W} height="14" fill="#000" opacity="0.18" />
+      <ellipse cx={W / 2} cy={FLOOR + 40} rx="120" ry="18" fill="#fff" opacity="0.08" />
     </>
   );
 }
@@ -341,7 +345,13 @@ const scenes: Record<string, () => ReactNode> = {
 export function HospitalityScene({ id }: { id: string }) {
   const draw = scenes[id];
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full scale-105 blur-[1.5px]" aria-hidden>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full" aria-hidden>
+      <defs>
+        <radialGradient id="room-top-light" cx="0.5" cy="0" r="0.9">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.22" />
+          <stop offset="0.6" stopColor="#fff" stopOpacity="0" />
+        </radialGradient>
+      </defs>
       {draw?.()}
     </svg>
   );
