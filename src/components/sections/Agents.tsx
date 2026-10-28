@@ -1,43 +1,77 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useRef } from "react";
+import { HospitalityScene } from "@/components/ui/hospitality-scenes";
 import { Reveal, SectionHeading } from "@/components/ui/reveal";
 import { agents, figure, sceneImage, type Agent } from "@/data/agents";
 import { cn } from "@/lib/utils";
 
-// Ruangan 3D dari CSS: dinding bergradasi, jendela bercahaya, lantai berperspektif, bokeh, dan bayangan kaki.
-function Scene({ scene }: { scene: Agent["scene"] }) {
-  const [top, bottom] = scene.wall;
+// Figur "hidup": napas & goyang idle, menoleh ke arah kursor, dan berkedip lewat kelopak berwarna kulit.
+function LivingFigure({ a, i }: { a: Agent; i: number }) {
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rotateY = useSpring(useTransform(mx, [-1, 1], [-9, 9]), { stiffness: 120, damping: 16 });
+  const rotateX = useSpring(useTransform(my, [-1, 1], [5, -5]), { stiffness: 120, damping: 16 });
+  // Variasi per agent supaya tidak bergerak serempak.
+  const dur = 3.6 + (i % 4) * 0.45;
+  const blinkDur = 4.2 + ((i * 7) % 5) * 0.6;
+
   return (
-    <div className="absolute inset-0" aria-hidden>
-      <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${top} 0%, ${bottom} 68%)` }} />
-      {/* Jendela + berkas cahaya */}
-      <div
-        className="absolute top-[8%] right-[10%] h-[34%] w-[30%] rounded-t-full opacity-70"
-        style={{ background: `linear-gradient(180deg, ${scene.light}, transparent)`, boxShadow: `0 0 60px 10px ${scene.light}55` }}
-      />
-      <div
-        className="absolute top-0 right-0 h-full w-[70%] opacity-40 mix-blend-soft-light"
-        style={{ background: `linear-gradient(225deg, ${scene.light} 0%, transparent 55%)` }}
-      />
-      {/* Bokeh */}
-      <div className="absolute top-[18%] left-[12%] size-10 rounded-full blur-md" style={{ background: `${scene.light}66` }} />
-      <div className="absolute top-[30%] left-[30%] size-5 rounded-full blur-sm" style={{ background: `${scene.light}88` }} />
-      <div className="absolute top-[12%] left-[45%] size-7 rounded-full blur-md" style={{ background: `${scene.light}55` }} />
-      {/* Lantai berperspektif */}
-      <div className="absolute inset-x-0 bottom-0 h-[30%] overflow-hidden [perspective:400px]">
-        <div
-          className="absolute inset-x-[-50%] top-0 h-[200%] origin-top [transform:rotateX(62deg)]"
-          style={{
-            background: `repeating-linear-gradient(90deg, ${scene.floor} 0 46px, color-mix(in srgb, ${scene.floor} 82%, white) 46px 48px)`,
-          }}
-        />
-        <div className="absolute inset-x-0 top-0 h-6" style={{ background: `linear-gradient(180deg, ${bottom}, transparent)` }} />
+    <div
+      className="absolute inset-0 [perspective:900px]"
+      onPointerMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        mx.set(((e.clientX - r.left) / r.width) * 2 - 1);
+        my.set(((e.clientY - r.top) / r.height) * 2 - 1);
+      }}
+      onPointerLeave={() => {
+        mx.set(0);
+        my.set(0);
+      }}
+    >
+      <div className="absolute bottom-[8%] left-1/2 h-[80%] -translate-x-1/2" style={{ aspectRatio: a.ratio }}>
+        <motion.div
+          className="relative size-full origin-bottom"
+          variants={{ hover: { y: -14, scale: 1.04 } }}
+          transition={{ type: "spring", stiffness: 200, damping: 18 }}
+          style={{ rotateX, rotateY }}
+        >
+          <motion.div
+            className="relative size-full origin-bottom"
+            animate={{ scaleY: [1, 1.014, 1], y: [0, -3, 0], rotate: [-0.7, 0.7, -0.7] }}
+            transition={{ duration: dur, repeat: Infinity, ease: "easeInOut", delay: (i % 5) * 0.3 }}
+          >
+            <img
+              src={figure(a.id)}
+              alt={`${a.name}, ${a.role}`}
+              loading="lazy"
+              draggable={false}
+              className="size-full object-contain object-bottom drop-shadow-[0_18px_24px_rgba(0,0,0,0.35)]"
+            />
+            {a.eyes.map((e, k) => (
+              <span
+                key={k}
+                aria-hidden
+                className="absolute animate-blink rounded-[50%] blur-[0.4px]"
+                style={
+                  {
+                    left: `${e.x - (e.w * 1.45) / 2}%`,
+                    top: `${e.y - (e.h * 1.45) / 2}%`,
+                    width: `${e.w * 1.45}%`,
+                    height: `${e.h * 1.45}%`,
+                    background: `radial-gradient(ellipse at 50% 30%, color-mix(in srgb, ${e.skin} 72%, white), color-mix(in srgb, ${e.skin} 85%, white) 80%)`,
+                    "--blink-dur": `${blinkDur}s`,
+                    "--blink-delay": `${-((i * 1.3) % blinkDur)}s`,
+                  } as React.CSSProperties
+                }
+              >
+                {/* Garis mata tertutup (lengkung bulu mata) */}
+                <span className="absolute inset-x-[14%] top-[38%] h-[30%] rounded-b-full border-b-[3px] border-[#3b2418]/80" />
+              </span>
+            ))}
+          </motion.div>
+        </motion.div>
       </div>
-      {/* Bayangan kaki */}
-      <div className="absolute bottom-[9%] left-1/2 h-6 w-[46%] -translate-x-1/2 rounded-[50%] bg-black/35 blur-md" />
-      {/* Vignette */}
-      <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.35)]" />
     </div>
   );
 }
@@ -54,7 +88,7 @@ function AgentCard({ a, i }: { a: Agent; i: number }) {
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-[28px] ring-1 ring-white/10 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)] transition-shadow duration-500 group-hover:shadow-[0_40px_90px_-30px_rgba(45,212,191,0.45)]">
         {a.sceneImage ? (
-          // Render 3D dengan ruangan asli (docs/avatar-scene-prompts.md) menggantikan latar CSS.
+          // Render 3D dengan ruangan asli (docs/avatar-scene-prompts.md) menggantikan ilustrasi SVG.
           <motion.img
             src={sceneImage(a.id)}
             alt={`${a.name}, ${a.role}, di ${a.scene.setting.toLowerCase()}`}
@@ -66,18 +100,13 @@ function AgentCard({ a, i }: { a: Agent; i: number }) {
           />
         ) : (
           <>
-            <motion.div className="absolute inset-0" variants={{ hover: { scale: 1.06 } }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
-              <Scene scene={a.scene} />
+            <motion.div className="absolute inset-0" variants={{ hover: { scale: 1.05 } }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
+              <HospitalityScene id={a.id} />
             </motion.div>
-            <motion.img
-              src={figure(a.id)}
-              alt={`${a.name}, ${a.role}`}
-              loading="lazy"
-              draggable={false}
-              variants={{ hover: { y: -14, scale: 1.04 } }}
-              transition={{ type: "spring", stiffness: 200, damping: 18 }}
-              className="absolute bottom-[8%] left-1/2 h-[80%] w-auto max-w-[92%] -translate-x-1/2 object-contain object-bottom drop-shadow-[0_18px_24px_rgba(0,0,0,0.35)]"
-            />
+            {/* Bayangan kaki + vignette, menyatukan figur dengan ruangan */}
+            <div className="absolute bottom-[7%] left-1/2 h-7 w-[50%] -translate-x-1/2 rounded-[50%] bg-black/40 blur-md" />
+            <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_110px_rgba(0,0,0,0.38)]" />
+            <LivingFigure a={a} i={i} />
           </>
         )}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
