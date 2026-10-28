@@ -1,0 +1,92 @@
+# Merge otomatis PR dari AI coding agent (Claude, ChatGPT/OpenAI Codex, dan agent lain) setelah CI hijau.
+# Dasar: clau-core AGENTS.md § Merge Otomatis Setelah CI Hijau (exact-head guard, tanpa bypass).
+# Hanya untuk kode/dokumentasi repo ini; bukan approval konten klien atau publish.
+# Opt-out: beri label `no-auto-merge` atau jadikan PR draft.
+name: Auto-merge AI PR
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+      # Prefix branch AI coding agent. Tambah di sini bila ada agent baru.
+      AI_PREFIXES: "claude/ codex/ openai/ chatgpt/ gpt/ copilot/ gemini/ cursor/ devin/ ai/"
+      # Sama dengan job di ci.yml.
+      REQUIRED_CHECKS: "build audit"
+    steps:
+      - name: Merge bila semua gate lulus
+        run: |
+          set -euo pipefail
+          ai=false
+          for p in $AI_PREFIXES; do [[ "$HEAD_BRANCH" == "$p"* ]] && ai=true; done
+          if [ "$ai" != true ]; then
+            echo "Branch $HEAD_BRANCH bukan branch AI agent; dilewati."
+            exit 0
+          fi
+
+          base="${{ github.event.repository.default_branch }}"
+          pr="$(gh api "repos/$REPO/pulls?state=open&base=$base&per_page=100" \
+            --jq "[.[] | select(.head.ref == \"$HEAD_BRANCH\" and .head.repo.full_name == \"$REPO\")] | first // empty")"
+          if [ -z "$pr" ]; then
+            echo "Tidak ada PR terbuka dari $HEAD_BRANCH ke $base."
+            exit 0
+          fi
+          number="$(jq -r .number <<<"$pr")"
+          head="$(jq -r .head.sha <<<"$pr")"
+          if [ "$(jq -r .draft <<<"$pr")" = true ]; then
+            echo "PR #$number masih draft; tidak di-merge."
+            exit 0
+          fi
+          if jq -e '.labels[].name | select(. == "no-auto-merge")' <<<"$pr" >/dev/null; then
+            echo "PR #$number berlabel no-auto-merge; tidak di-merge."
+            exit 0
+          fi
+          if [ "$head" != "$HEAD_SHA" ]; then
+            echo "Head PR #$number sudah berubah ($head); menunggu CI untuk head terbaru."
+            exit 0
+          fi
+
+          # Semua check wajib di head PR harus completed/success (run push maupun pull_request).
+          runs="$(gh api "repos/$REPO/commits/$head/check-runs?per_page=100" \
+            --jq '.check_runs[] | [.name, .status, (.conclusion // "")] | @tsv')"
+          for check in $REQUIRED_CHECKS; do
+            rows="$(awk -F'\t' -v n="$check" '$1 == n' <<<"$runs")"
+            if [ -z "$rows" ] || grep -qvE $'\tcompleted\tsuccess$' <<<"$rows"; then
+              printf '%s\n' "$runs"
+              echo "Check $check belum hijau di $head; tidak di-merge."
+              exit 0
+            fi
+          done
+          # Check lain yang sudah selesai juga tidak boleh gagal.
+          if grep -E $'\tcompleted\t(failure|cancelled|timed_out|action_required|startup_failure|stale)$' <<<"$runs"; then
+            echo "Ada check gagal di $head; tidak di-merge."
+            exit 0
+          fi
+
+          mergeable="$(gh api "repos/$REPO/pulls/$number" --jq .mergeable)"
+          if [ "$mergeable" = false ]; then
+            echo "::warning::PR #$number konflik dengan $base; selesaikan konflik di branch PR."
+            exit 0
+          fi
+
+          echo "Semua gate lulus; merge PR #$number di $head"
+          # --match-head-commit: tolak merge bila branch berubah setelah check dibaca.
+          gh pr merge "$number" --repo "$REPO" --merge --match-head-commit "$head"
