@@ -91,3 +91,13 @@ body {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Kedipan mata agent: kelopak menutup sebentar di akhir tiap siklus. */
+@keyframes blink {
+  0%, 93%, 100% { transform: scaleY(0); }
+  96% { transform: scaleY(1); }
+}
+@utility animate-blink {
+  animation: blink var(--blink-dur, 5s) ease-in-out var(--blink-delay, 0s) infinite;
+  transform-origin: top;
+}
