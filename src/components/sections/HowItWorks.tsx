@@ -1,7 +1,7 @@
 import { ClipboardCheck, PenLine, ScanSearch, UserCheck, Send } from "lucide-react";
 import { motion, useScroll, useSpring } from "motion/react";
 import { useRef } from "react";
-import { SectionHeading } from "@/components/ui/reveal";
+import { Reveal, SectionHeading } from "@/components/ui/reveal";
 
 const steps = [
   { icon: ClipboardCheck, title: "Discovery & Fact Sheet", who: "Anda + tim CLAU", body: "Kami kenali properti, tamu, dan voice brand Anda. Anda mengonfirmasi fact sheet: harga, fasilitas, kebijakan." },
@@ -28,6 +28,8 @@ export function HowItWorks() {
           }
           subtitle="Lima langkah yang sama untuk setiap konten, setiap klien. Tercatat di platform, jadi selalu jelas siapa memeriksa apa."
         />
+
+        <FlowDiagram />
 
         <ol ref={ref} className="relative mx-auto mt-16 max-w-3xl">
           <div className="absolute top-2 bottom-2 left-6 w-px bg-white/10 sm:left-1/2" aria-hidden />
@@ -65,5 +67,89 @@ export function HowItWorks() {
         </ol>
       </div>
     </section>
+  );
+}
+
+// Mekanisme alur konten: jalur draft → tayang lewat manusia, loop revisi, dan jalur auto-publish yang tidak ada.
+const nodes = [
+  { x: 10, label: "Fact sheet", sub: "dikonfirmasi klien" },
+  { x: 205, label: "Agent AI", sub: "menyusun draft" },
+  { x: 400, label: "Fact-check AI", sub: "+ penanda risiko" },
+  { x: 595, label: "QA & approval", sub: "manusia L1–L3", human: true },
+  { x: 790, label: "Dijadwalkan", sub: "oleh manusia", human: true },
+];
+const BW = 140;
+const BH = 58;
+const Y = 70;
+
+function FlowDiagram() {
+  return (
+    <Reveal className="mx-auto mt-14 max-w-5xl">
+      <figure className="overflow-x-auto rounded-3xl p-5 glass sm:p-7">
+        <svg
+          viewBox="0 0 940 300"
+          role="img"
+          aria-label="Alur konten CLAU: fact sheet ke agent AI, fact-check, QA dan approval manusia, lalu dijadwalkan manusia ke kanal. Jalur langsung dari agent AI ke kanal (auto-publish) tidak ada."
+          className="mx-auto h-auto w-full min-w-[640px] text-slate-300"
+        >
+          <defs>
+            <marker id="fd-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
+            </marker>
+            <marker id="fd-arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="#5eead4" />
+            </marker>
+          </defs>
+
+          {/* Loop revisi: QA mengembalikan draft ke agent */}
+          <path d={`M665 ${Y} C665 18 275 18 275 ${Y}`} fill="none" stroke="currentColor" strokeOpacity="0.5" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#fd-arrow)" />
+          <text x="465" y="26" textAnchor="middle" fontSize="12" fill="currentColor" fillOpacity="0.75">revisi bila ada yang salah</text>
+
+          {/* Panah utama berlabel */}
+          {[
+            { from: 0, label: "fakta" },
+            { from: 1, label: "draft" },
+            { from: 2, label: "ditandai" },
+            { from: 3, label: "disetujui" },
+          ].map(({ from, label }) => {
+            const x1 = nodes[from].x + BW;
+            const x2 = nodes[from + 1].x;
+            const teal = from === 3;
+            return (
+              <g key={label}>
+                <line x1={x1 + 2} y1={Y + BH / 2} x2={x2 - 4} y2={Y + BH / 2} stroke={teal ? "#5eead4" : "currentColor"} strokeWidth="1.8" markerEnd={teal ? "url(#fd-arrow-teal)" : "url(#fd-arrow)"} />
+                <text x={(x1 + x2) / 2} y={Y + BH / 2 - 8} textAnchor="middle" fontSize="11" fill="currentColor" fillOpacity="0.8">{label}</text>
+              </g>
+            );
+          })}
+
+          {nodes.map((n) => (
+            <g key={n.label}>
+              <rect x={n.x} y={Y} width={BW} height={BH} rx="12" fill={n.human ? "#2dd4bf" : "currentColor"} fillOpacity={n.human ? 0.14 : 0.06} stroke={n.human ? "#5eead4" : "currentColor"} strokeOpacity={n.human ? 0.8 : 0.35} />
+              <text x={n.x + BW / 2} y={Y + 25} textAnchor="middle" fontSize="13" fontWeight="700" fill={n.human ? "#ccfbf1" : "currentColor"}>{n.label}</text>
+              <text x={n.x + BW / 2} y={Y + 43} textAnchor="middle" fontSize="11" fill="currentColor" fillOpacity="0.7">{n.sub}</text>
+            </g>
+          ))}
+
+          {/* Kanal tayang */}
+          <rect x="790" y="220" width={BW} height={BH} rx="12" fill="currentColor" fillOpacity="0.06" stroke="currentColor" strokeOpacity="0.35" />
+          <text x="860" y="245" textAnchor="middle" fontSize="13" fontWeight="700" fill="currentColor">Kanal tayang</text>
+          <text x="860" y="263" textAnchor="middle" fontSize="11" fill="currentColor" fillOpacity="0.7">IG · GBP · OTA</text>
+          <line x1="860" y1={Y + BH + 2} x2="860" y2="216" stroke="#5eead4" strokeWidth="1.8" markerEnd="url(#fd-arrow-teal)" />
+          <text x="868" y="180" fontSize="11" fill="currentColor" fillOpacity="0.8">akses partner</text>
+
+          {/* Jalur yang tidak ada: agent AI langsung ke kanal */}
+          <path d={`M275 ${Y + BH + 2} V249 H784`} fill="none" stroke="#fb7185" strokeWidth="1.8" strokeDasharray="6 6" />
+          <g transform="translate(530 249)">
+            <circle r="13" fill="#05080d" stroke="#fb7185" strokeWidth="1.8" />
+            <path d="M-5 -5 L5 5 M5 -5 L-5 5" stroke="#fb7185" strokeWidth="2.2" strokeLinecap="round" />
+          </g>
+          <text x="530" y="285" textAnchor="middle" fontSize="12" fontWeight="600" fill="#fda4af">auto-publish: tidak ada</text>
+        </svg>
+        <figcaption className="mt-4 text-center text-sm text-slate-400">
+          Setiap konten lewat jalur yang sama sampai disetujui manusia. Agent AI tidak punya jalur langsung ke kanal tayang.
+        </figcaption>
+      </figure>
+    </Reveal>
   );
 }

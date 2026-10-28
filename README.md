@@ -16,10 +16,12 @@ npm run build     # typecheck + build ke dist/
 
 | Path | Isi |
 |---|---|
-| `src/App.tsx` | Urutan section: Hero → Trusted By → The Agents → Keamanan Konten (Bento) → How it Works → Pricing → CTA |
+| `src/App.tsx` | Urutan section: Hero (lounge villa + Tara) → Trusted By → Showcase (close-up wajah agent) → The Agents (carousel) → Desk Scene (agent di meja resepsionis) → Keamanan Konten (Bento) → How it Works (+ diagram alur) → Pricing → CTA |
 | `src/components/sections/` | Satu file per section |
 | `src/components/ui/orbiting-circles.tsx` | Dari 21st.dev `ruixen.ui/hero-section06`, diadaptasi tanpa Next.js |
 | `src/components/ui/bento-grid.tsx` | Dari 21st.dev `kokonutd/bento-grid`, ditambah slot visual + hover Motion |
+| `src/components/ui/agent-figure.tsx` | Figur agent hidup: napas/goyang idle, kedip (kelopak berwarna kulit), menoleh via rotateX/rotateY |
+| `src/components/ui/wide-scenes.tsx` · `hospitality-scenes.tsx` | Adegan SVG berlapis (parallax) untuk hero & meja · 12 ruangan hospitality per peran untuk kartu |
 | `src/components/ui/reveal.tsx` · `button.tsx` | Scroll reveal (fade-in + slide-up) dan tombol dengan hover Motion |
 | `public/agents/scene/` | (Opsional) render 3D dengan ruangan asli per agent; prompt & cara pasang: `docs/avatar-scene-prompts.md` |
 | `src/data/agents.ts` | 12 agent, mengikuti `clau-agent/agents/registry.json`, + suasana ruangan (`scene`) per kartu |
